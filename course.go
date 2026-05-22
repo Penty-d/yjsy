@@ -18,6 +18,9 @@ func (s *Student) GetTerms() (*Term, error) {
 	terms := new(Term)
 	for _, row := range rows {
 		cells := htmlquery.Find(row, `td`)
+		if len(cells) == 0 {
+			continue
+		}
 		term := strings.TrimSpace(htmlquery.InnerText(cells[0]))
 		terms.Terms = append(terms.Terms, term)
 	}
@@ -77,7 +80,7 @@ func (s *Student) parseSinglePageByXNXQ(url string, term string) ([]*Course, str
 
 	for _, row := range rows {
 		cells := htmlquery.Find(row, `td`)
-		if len(cells) < 8 {
+		if len(cells) < 9 {
 			continue
 		}
 		// Parse fields
@@ -146,8 +149,17 @@ func parseScheduleRules(rawScheduleRules string) []CourseScheduleRule {
 
 		// Parsing week, day, and location
 		weekInfo := strings.Split(parts[0], "-")
+		if len(weekInfo) < 2 {
+			continue
+		}
 		dayInfo := strings.Split(parts[1], ":")
+		if len(dayInfo) < 2 {
+			continue
+		}
 		classInfo := strings.Split(strings.TrimSuffix(dayInfo[1], "节"), "-")
+		if len(classInfo) < 2 {
+			continue
+		}
 
 		startWeek, _ := strconv.Atoi(strings.TrimSuffix(weekInfo[0], "周"))
 		endWeek, _ := strconv.Atoi(strings.TrimSuffix(weekInfo[1], "周"))
@@ -185,6 +197,9 @@ func (s *Student) parseNextPage(url string) ([]*Course, string, error) {
 
 	for _, row := range rows {
 		cells := htmlquery.Find(row, `td`)
+		if len(cells) < 9 {
+			continue
+		}
 
 		// Parse fields
 		term := strings.TrimSpace(htmlquery.InnerText(cells[0]))
